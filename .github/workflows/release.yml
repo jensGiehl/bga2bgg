@@ -55,6 +55,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ needs.release-please.outputs.tag_name }}" target/*.jar --clobber
 
+      - name: Upload JAR as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: b2b-test
+          path: target/*.jar
+
   # Builds the image under the version number (e.g. 0.1.0). The "latest" tag
   # is still maintained by docker-publish.yml on every main push.
   publish-docker:
