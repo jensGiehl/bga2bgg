@@ -1,17 +1,17 @@
 name: Release
 
-# release-please beobachtet die Conventional Commits auf main und pflegt
-# fortlaufend einen "Release PR" (Versions-Bump in pom.xml + CHANGELOG.md).
-# Erst beim Mergen dieses PRs entstehen Tag + GitHub Release — danach bauen
-# die publish-Jobs das JAR bzw. das versionierte Docker-Image.
+# release-please observes the Conventional Commits on main and continuously
+# maintains a "Release PR" (version bump in pom.xml + CHANGELOG.md).
+# Only when this PR is merged, the tag + GitHub Release are created - after that
+# the publish jobs build the JAR or the versioned Docker image.
 on:
   push:
     branches:
       - main
 
 permissions:
-  contents: write        # Tags & Releases anlegen
-  pull-requests: write   # Release-PR anlegen/aktualisieren
+  contents: write        # Create tags & releases
+  pull-requests: write   # Create/update release PR
 
 concurrency:
   group: release-${{ github.ref }}
@@ -24,13 +24,13 @@ jobs:
       release_created: ${{ steps.rp.outputs.release_created }}
       tag_name: ${{ steps.rp.outputs.tag_name }}
     steps:
-      # Liest release-please-config.json + .release-please-manifest.json.
+      # Reads release-please-config.json + .release-please-manifest.json.
       - uses: googleapis/release-please-action@v5
         id: rp
 
-  # Läuft nur, wenn der Release-PR gemergt und ein Release erstellt wurde.
-  # (Im selben Workflow-Run getriggert — daher greift die GITHUB_TOKEN-Sperre
-  #  gegen kaskadierende Tag-Events nicht, es braucht keinen PAT.)
+  # Runs only if the release PR has been merged and a release has been created.
+  # (Triggered in the same workflow run - therefore the GITHUB_TOKEN lock
+  #  against cascading tag events does not apply, no PAT is needed).
   publish-jar:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
@@ -50,13 +50,13 @@ jobs:
       - name: Build JAR
         run: ./mvnw --batch-mode --no-transfer-progress verify
 
-      - name: JAR ans GitHub Release hängen
+      - name: Attach JAR to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ needs.release-please.outputs.tag_name }}" target/*.jar --clobber
 
-  # Baut das Image unter der Versionsnummer (z. B. 0.1.0). Das "latest"-Tag
-  # pflegt weiterhin docker-publish.yml bei jedem main-Push.
+  # Builds the image under the version number (e.g. 0.1.0). The "latest" tag
+  # is still maintained by docker-publish.yml on every main push.
   publish-docker:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Versionsnummer aus Tag ableiten
+      - name: Derive version number from tag
         id: v
         env:
           TAG: ${{ needs.release-please.outputs.tag_name }}
@@ -86,7 +86,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build & push versioniertes Image
+      - name: Build & push versioned image
         uses: docker/build-push-action@v7
         with:
           context: .
