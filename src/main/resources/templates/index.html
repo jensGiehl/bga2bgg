@@ -7,6 +7,7 @@
     <title th:text="#{app.title}">BGA → BGG Converter</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/flag-icon-css/css/flag-icon.min.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body class="d-flex flex-column vh-100"
@@ -22,9 +23,9 @@
     </div>
     <div class="btn-group" role="group" th:aria-label="#{language.label}">
         <a class="btn btn-outline-secondary btn-sm" th:href="@{/(lang='en')}"
-           th:classappend="${#locale.language == 'en'} ? 'active'"><span aria-hidden="true">🇬🇧</span> <span th:text="#{language.english}">English</span></a>
+           th:classappend="${#locale.language == 'en'} ? 'active'"><span class="flag-icon flag-icon-gb me-2"></span><span th:text="#{language.english}">English</span></a>
         <a class="btn btn-outline-secondary btn-sm" th:href="@{/(lang='de')}"
-           th:classappend="${#locale.language == 'de'} ? 'active'"><span aria-hidden="true">🇩🇪</span> <span th:text="#{language.german}">Deutsch</span></a>
+           th:classappend="${#locale.language == 'de'} ? 'active'"><span class="flag-icon flag-icon-de me-2"></span><span th:text="#{language.german}">Deutsch</span></a>
     </div>
 </header>
 
