@@ -42,21 +42,21 @@ class WebEndpointsTest {
     @Test
     void convertEndpointReturnsForumMarkup() throws Exception {
         String body = """
-                {"text":"Jakib\\tCosmo\\nSpielergebnis\\t1. (26)\\t2. (25)","theme":"default"}""";
+                {"text":"AAA\\tBBB\\nSpielergebnis\\t1. (26)\\t2. (25)","theme":"default"}""";
 
         mockMvc.perform(post("/api/convert")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.output", containsString("g{Jakob}g")))
-                .andExpect(jsonPath("$.output", containsString("g{BGA User Cosmo}g")));
+                .andExpect(jsonPath("$.output", containsString("g{BGA User AAA}g")))
+                .andExpect(jsonPath("$.output", containsString("g{BGA User BBB}g")));
     }
 
     @Test
     void convertEndpointReturnsLocalizedErrorForInconsistentInput() throws Exception {
         // 3 usernames, 4 values per row.
         String body = """
-                {"text":"JensG83\\tTypischserg\\tJakib\\nSpielergebnis\\t1. (36)\\t2. (34)\\t3. (33)\\t4. (27)","theme":"default"}""";
+                {"text":"AAA\\tBBB\\tCCC\\nSpielergebnis\\t1. (36)\\t2. (34)\\t3. (33)\\t4. (27)","theme":"default"}""";
 
         mockMvc.perform(post("/api/convert")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +71,7 @@ class WebEndpointsTest {
     @Test
     void convertEndpointErrorIsTranslatedToGerman() throws Exception {
         String body = """
-                {"text":"JensG83\\tTypischserg\\tJakib\\nSpielergebnis\\t1. (36)\\t2. (34)\\t3. (33)\\t4. (27)","theme":"default"}""";
+                {"text":"AAA\\tBBB\\tCCC\\nSpielergebnis\\t1. (36)\\t2. (34)\\t3. (33)\\t4. (27)","theme":"default"}""";
 
         mockMvc.perform(post("/api/convert").param("lang", "de")
                         .contentType(MediaType.APPLICATION_JSON)
