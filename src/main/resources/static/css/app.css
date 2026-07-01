@@ -8,3 +8,13 @@ textarea {
 #bggOutput {
     background-color: var(--bs-tertiary-bg);
 }
+
+@media (max-width: 767.98px) {
+    main .row > section:first-child {
+        height: auto !important;
+    }
+    #bgaInput {
+        height: 15rem;
+        flex-grow: 0 !important;
+    }
+}
