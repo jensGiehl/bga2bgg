@@ -14,7 +14,7 @@ textarea {
         height: auto !important;
     }
     #bgaInput {
-        height: 15rem;
+        height: 10rem;
         flex-grow: 0 !important;
     }
 }
