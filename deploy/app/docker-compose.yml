@@ -1,0 +1,35 @@
+# Template for ONE app. Copy this folder per app (e.g. ~/apps/<name>/),
+# set the values in .env, and run `docker compose up -d` inside it.
+#
+# The app is never published directly: Traefik reaches it over the shared
+# "web" network and serves it at https://${APP_NAME}.${BASE_DOMAIN}.
+# The infra stack (deploy/infra) must be running first — it owns "web".
+#
+# Copy .env.example to .env and fill in APP_IMAGE, APP_NAME, BASE_DOMAIN.
+# See docs/server-setup.md for the full walkthrough.
+
+services:
+  app:
+    image: ${APP_IMAGE}
+    container_name: ${APP_NAME}
+    restart: unless-stopped
+    # No published ports: Traefik reaches it over the internal "web" network.
+    expose:
+      - "8080"
+    labels:
+      - traefik.enable=true
+      # Router/service names are keyed by APP_NAME so multiple apps never clash.
+      - traefik.http.routers.${APP_NAME}.rule=Host(`${APP_NAME}.${BASE_DOMAIN}`)
+      - traefik.http.routers.${APP_NAME}.entrypoints=websecure
+      - traefik.http.routers.${APP_NAME}.tls.certresolver=le
+      - traefik.http.services.${APP_NAME}.loadbalancer.server.port=8080
+      # Let Watchtower manage this container.
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - web
+
+networks:
+  # Provided by the infra stack; do not create it here.
+  web:
+    external: true
+    name: web

@@ -1,0 +1,55 @@
+# Shared infrastructure for the host: reverse proxy + auto-updater.
+#
+# Bring this up ONCE. It runs independently of the apps and rarely changes.
+# Traefik terminates TLS and obtains/renews Let's Encrypt certificates,
+# routing each subdomain to the matching app container by its labels.
+# Watchtower watches the registry and, when a new :latest image is pushed by
+# CI, pulls it, stops the old container and starts the new one.
+#
+# This stack OWNS the shared "web" network. Bring it up before any app.
+# Copy .env.example to .env and fill in ACME_EMAIL first.
+# See docs/server-setup.md for the full walkthrough.
+
+services:
+  traefik:
+    image: traefik:v3.3
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      # Entry points: HTTP is redirected to HTTPS.
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      # Let's Encrypt via the TLS-ALPN-01 challenge (needs only port 443).
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - web
+
+  # Polls the registry every 5 minutes; replaces any labelled container on a
+  # new image. Talks to the Docker socket only — no network needed.
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: unless-stopped
+    command: --cleanup --label-enable --interval 300
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Only needed for a PRIVATE registry (see docs/server-setup.md).
+      # - /root/.docker/config.json:/config.json:ro
+
+networks:
+  # Created and owned by this stack; apps join it as an external network.
+  web:
+    name: web
+
+volumes:
+  letsencrypt:

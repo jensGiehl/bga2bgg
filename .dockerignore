@@ -1,0 +1,22 @@
+# Build output — rebuilt inside the image
+target/
+
+# VCS and IDE metadata
+.git/
+.github/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Docs and deploy assets are not needed in the build context
+docs/
+deploy/
+README.md
+HELP.md
+
+# OS cruft
+.DS_Store
+
+# The wrapper jar is downloaded on demand by mvnw; keep the context small
+.mvn/wrapper/maven-wrapper.jar

@@ -1,0 +1,80 @@
+name: Build & Publish Docker image
+
+# Runs on every push to main/master.
+on:
+  push:
+    branches:
+      - main
+      - master
+
+# A newer push supersedes an in-flight build for the same branch.
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  # e.g. ghcr.io/jensgiehl/bga2bgg — GHCR requires an all-lowercase path,
+  # which github.repository already is for this repo.
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Gate the image on a green test run so we never publish a broken build.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '25'
+          cache: maven
+
+      - name: Run tests
+        run: ./mvnw --batch-mode --no-transfer-progress verify
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # required to push to GHCR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          # Automatically provided by GitHub Actions — no secret to configure.
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Derives image tags/labels: "latest" (default branch), a git-sha tag,
+      # and OCI labels linking the image back to the commit.
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Persist the build cache between runs to speed up rebuilds.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

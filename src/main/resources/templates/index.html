@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" th:lang="${#locale.language}" data-bs-theme="dark"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{app.title}">BGA → BGG Converter</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column vh-100"
+      th:attr="data-default-theme=${defaultThemeId}">
+
+<header class="border-bottom px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1 class="h4 mb-0">
+            <i class="bi bi-controller me-2"></i>
+            <span th:text="#{app.title}">BGA → BGG Converter</span>
+        </h1>
+        <small class="text-secondary" th:text="#{app.subtitle}">Convert statistics</small>
+    </div>
+    <div class="btn-group" role="group" th:aria-label="#{language.label}">
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/(lang='en')}"
+           th:classappend="${#locale.language == 'en'} ? 'active'"><span aria-hidden="true">🇬🇧</span> <span th:text="#{language.english}">English</span></a>
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/(lang='de')}"
+           th:classappend="${#locale.language == 'de'} ? 'active'"><span aria-hidden="true">🇩🇪</span> <span th:text="#{language.german}">Deutsch</span></a>
+    </div>
+</header>
+
+<main class="flex-grow-1 overflow-hidden p-4">
+    <div class="row g-4 h-100">
+
+        <!-- Left: BGA input -->
+        <section class="col-md-6 d-flex flex-column h-100">
+            <label for="bgaInput" class="form-label fw-semibold">
+                <i class="bi bi-clipboard-data me-1"></i>
+                <span th:text="#{input.label}">boardgamearena.com statistic</span>
+            </label>
+            <textarea id="bgaInput" class="form-control flex-grow-1 font-monospace mb-3"
+                      autofocus th:placeholder="#{input.placeholder}"
+                      spellcheck="false"></textarea>
+            <button id="clearButton" type="button" class="btn btn-outline-danger btn-lg">
+                <i class="bi bi-trash3 me-2"></i><span th:text="#{button.clear}">Clear</span>
+            </button>
+        </section>
+
+        <!-- Right: BGG output -->
+        <section class="col-md-6 d-flex flex-column h-100">
+            <div class="d-flex justify-content-between align-items-end mb-1 flex-wrap gap-2">
+                <label for="bggOutput" class="form-label fw-semibold mb-0">
+                    <i class="bi bi-braces-asterisk me-1"></i>
+                    <span th:text="#{output.label}">boardgamegeek.com forum markup</span>
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                    <label for="themeSelect" class="form-label mb-0 small text-secondary"
+                           th:text="#{theme.label}">Theme</label>
+                    <select id="themeSelect" class="form-select form-select-sm w-auto">
+                        <option th:each="t : ${themes}" th:value="${t.id}"
+                                th:text="#{__${t.labelKey}__}">Theme</option>
+                    </select>
+                </div>
+            </div>
+            <div id="errorAlert" class="alert alert-danger d-none py-2 mb-2" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span id="errorMessage"></span>
+            </div>
+            <textarea id="bggOutput" class="form-control flex-grow-1 font-monospace mb-3"
+                      readonly spellcheck="false"></textarea>
+            <button id="copyButton" type="button" class="btn btn-primary btn-lg"
+                    th:attr="data-copy-label=#{button.copy},data-copied-label=#{button.copied}">
+                <i class="bi bi-clipboard-check me-2"></i><span th:text="#{button.copy}">Copy</span>
+            </button>
+        </section>
+
+    </div>
+</main>
+
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
