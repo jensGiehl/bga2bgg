@@ -25,10 +25,21 @@ public class DefaultBggTheme implements BggTheme {
     public String render(GameResult result) {
         StringJoiner blocks = new StringJoiner("\n\n");
         blocks.add(INTRO);
+        if (!result.globalStatistics().isEmpty()) {
+            blocks.add(renderGlobalStatistics(result));
+        }
         for (Player player : result.players()) {
             blocks.add(renderPlayer(player));
         }
         return blocks.toString();
+    }
+
+    private String renderGlobalStatistics(GameResult result) {
+        StringJoiner lines = new StringJoiner("\n");
+        for (StatEntry entry : result.globalStatistics()) {
+            lines.add(entry.label() + ": [b]" + entry.value() + "[/b]");
+        }
+        return lines.toString();
     }
 
     private String renderPlayer(Player player) {

@@ -24,10 +24,21 @@ public class CompactBggTheme implements BggTheme {
     public String render(GameResult result) {
         StringJoiner lines = new StringJoiner("\n");
         lines.add(INTRO);
+        if (!result.globalStatistics().isEmpty()) {
+            lines.add(renderGlobalStatistics(result));
+        }
         for (Player player : result.players()) {
             lines.add(renderPlayer(player));
         }
         return lines.toString();
+    }
+
+    private String renderGlobalStatistics(GameResult result) {
+        StringJoiner stats = new StringJoiner(" | ");
+        for (StatEntry entry : result.globalStatistics()) {
+            stats.add(entry.label() + ": [b]" + entry.value() + "[/b]");
+        }
+        return stats.toString();
     }
 
     private String renderPlayer(Player player) {

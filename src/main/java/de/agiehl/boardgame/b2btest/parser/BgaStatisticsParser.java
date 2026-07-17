@@ -26,9 +26,43 @@ public class BgaStatisticsParser {
             return RawStatistics.empty();
         }
 
-        List<String> usernames = splitColumns(lines.getFirst());
-        List<RawStatisticRow> rows = parseRows(lines.subList(1, lines.size()), usernames.size());
-        return new RawStatistics(usernames, rows);
+        int headerIndex = findPlayerHeader(lines);
+        List<RawGlobalStatistic> globalStatistics = parseGlobalStatistics(
+                lines.subList(0, headerIndex));
+        List<String> usernames = splitColumns(lines.get(headerIndex));
+        List<RawStatisticRow> rows = parseRows(
+                lines.subList(headerIndex + 1, lines.size()), usernames.size());
+        return new RawStatistics(globalStatistics, usernames, rows);
+    }
+
+    /** The row below the player header has one additional column for its statistic label. */
+    private int findPlayerHeader(List<String> lines) {
+        for (int index = 0; index + 1 < lines.size(); index++) {
+            int headerColumns = splitColumns(lines.get(index)).size();
+            boolean allFollowingLinesMatch = lines.subList(index + 1, lines.size()).stream()
+                    .allMatch(line -> splitColumns(line).size() == headerColumns + 1);
+            if (allFollowingLinesMatch) {
+                return index;
+            }
+        }
+        return 0;
+    }
+
+    private List<RawGlobalStatistic> parseGlobalStatistics(List<String> lines) {
+        if (lines.size() % 2 != 0) {
+            throw new StatisticFormatException("error.globalStatisticFormat", lines.size());
+        }
+
+        List<RawGlobalStatistic> statistics = new ArrayList<>();
+        for (int index = 0; index < lines.size(); index += 2) {
+            List<String> label = splitColumns(lines.get(index));
+            List<String> value = splitColumns(lines.get(index + 1));
+            if (label.size() != 1 || value.size() != 1) {
+                throw new StatisticFormatException("error.globalStatisticFormat", lines.size());
+            }
+            statistics.add(new RawGlobalStatistic(label.getFirst(), value.getFirst()));
+        }
+        return statistics;
     }
 
     private List<RawStatisticRow> parseRows(List<String> lines, int playerCount) {

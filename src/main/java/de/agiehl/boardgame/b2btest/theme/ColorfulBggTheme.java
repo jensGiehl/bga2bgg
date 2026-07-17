@@ -25,11 +25,23 @@ public class ColorfulBggTheme implements BggTheme {
     public String render(GameResult result) {
         StringJoiner blocks = new StringJoiner("\n\n");
         blocks.add(INTRO);
+        if (!result.globalStatistics().isEmpty()) {
+            blocks.add(renderGlobalStatistics(result));
+        }
         int position = 1;
         for (Player player : result.players()) {
             blocks.add(renderPlayer(player, position++));
         }
         return blocks.toString();
+    }
+
+    private String renderGlobalStatistics(GameResult result) {
+        StringJoiner lines = new StringJoiner("\n");
+        for (StatEntry entry : result.globalStatistics()) {
+            lines.add("[color=#808080]" + entry.label() + "[/color]: [b]"
+                    + entry.value() + "[/b]");
+        }
+        return lines.toString();
     }
 
     private String renderPlayer(Player player, int position) {
