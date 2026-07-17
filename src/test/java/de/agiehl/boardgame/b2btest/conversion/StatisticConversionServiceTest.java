@@ -73,4 +73,25 @@ class StatisticConversionServiceTest {
     void returnsEmptyStringForBlankInput() {
         assertThat(service.convert("", "default")).isEmpty();
     }
+
+    @Test
+    void rendersGameWideStatisticsOnceAndKeepsZeroValues() {
+        String input = String.join("\n",
+                "Durchschnittliche Punktzahl",
+                "0",
+                "Getötete Schlurfer",
+                "6",
+                "JensG83\tJakib",
+                "Spielergebnis\t1. (0)\t1. (0)",
+                "Bedenkzeit\t2h38\t17h23");
+
+        String output = service.convert(input, "default");
+
+        assertThat(output)
+                .contains("Durchschnittliche Punktzahl: [b]0[/b]")
+                .contains("Getötete Schlurfer: [b]6[/b]")
+                .contains("[b][u]g{BGA User JensG83}g[/u][/b]")
+                .contains("[b][u]g{Jakob}g[/u][/b]");
+        assertThat(output.split("Getötete Schlurfer", -1)).hasSize(2);
+    }
 }

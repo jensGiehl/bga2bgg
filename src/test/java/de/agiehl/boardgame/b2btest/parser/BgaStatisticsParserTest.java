@@ -38,6 +38,26 @@ class BgaStatisticsParserTest {
     }
 
     @Test
+    void parsesOptionalGameWideStatisticsBeforePlayerTable() {
+        String pasted = String.join("\n",
+                "Durchschnittliche Punktzahl",
+                "0",
+                "Getötete Schlurfer",
+                "6",
+                "JensG83\tJakib",
+                "Spielergebnis\t1. (0)\t1. (0)",
+                "Bedenkzeit\t2h38\t17h23");
+
+        RawStatistics raw = parser.parse(pasted);
+
+        assertThat(raw.globalStatistics()).containsExactly(
+                new RawGlobalStatistic("Durchschnittliche Punktzahl", "0"),
+                new RawGlobalStatistic("Getötete Schlurfer", "6"));
+        assertThat(raw.usernames()).containsExactly("JensG83", "Jakib");
+        assertThat(raw.rows()).hasSize(2);
+    }
+
+    @Test
     void throwsWhenARowHasMoreValuesThanPlayers() {
         // 3 usernames but the rows carry 4 values.
         String pasted = String.join("\n",

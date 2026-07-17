@@ -43,7 +43,10 @@ public class GameResultAssembler {
             players.add(buildPlayer(raw, column));
         }
         players.sort(Comparator.comparingInt(Player::rank));
-        return new GameResult(players);
+        List<StatEntry> globalStatistics = raw.globalStatistics().stream()
+                .map(statistic -> new StatEntry(statistic.label(), statistic.value()))
+                .toList();
+        return new GameResult(globalStatistics, players);
     }
 
     private Player buildPlayer(RawStatistics raw, int column) {
