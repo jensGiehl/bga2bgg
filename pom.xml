@@ -28,7 +28,7 @@
         <bootstrap.version>5.3.8</bootstrap.version>
         <bootstrap-icons.version>1.13.1</bootstrap-icons.version>
         <flag-icon-css.version>2.4.0</flag-icon-css.version>
-        <playwright.version>1.61.0</playwright.version>
+        <playwright.version>1.62.0</playwright.version>
     </properties>
     <dependencies>
         <dependency>
